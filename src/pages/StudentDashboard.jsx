@@ -35,10 +35,12 @@ export default function StudentDashboard() {
 
     useEffect(() => { hydrate(); }, []);
 
-    const enrolledCourseIds = useMemo(
-        () => new Set(enrollments.map((e) => e.course.id)),
-        [enrollments]
-    );
+    const enrolledCourseIds = useMemo(() => {
+        const ids = (enrollments || [])
+            .map((e) => e?.course?.id ?? e?.course_id)
+            .filter(Boolean);
+        return new Set(ids);
+    }, [enrollments]);
 
     async function handleEnroll(courseId) {
         try {
@@ -84,17 +86,22 @@ export default function StudentDashboard() {
             <div className="muted">You do not have any courses yet. Enroll below!</div>
             ) : (
             <div className="grid three">
-                {enrollments.map((enr) => (
-                <CourseCard
-                    key={enr.id}
-                    course={enr.course}
-                    footer={
-                    <button className="btn danger" onClick={() => handleUnenroll(enr.id)}>
-                        Unenroll
-                    </button>
-                    }
-                />
-                ))}
+                {enrollments.map((enr) => {
+                    const course = enr.course ?? {
+                        id: enr.course_id,
+                        code: enr.course_code || "(code)",
+                        name: enr.course_name || "(name)",
+                        credits: enr.credits ?? 0,
+                        available_seats: enr.available_seats ?? 0,
+                    };
+                    return (
+                        <CourseCard
+                        key={enr.id}
+                        course={course}
+                        footer={<button className="btn danger" onClick={() => handleUnenroll(enr.id)}>Unenroll</button>}
+                        />
+                    );
+                })}
             </div>
             )}
         </div>
