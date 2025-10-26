@@ -153,3 +153,26 @@
   border-radius: 8px;
   text-decoration: none;
 }
+
+.container {
+  max-width: 980px; 
+  margin: 0 auto; 
+  padding: 0 1rem; 
+}
+
+.card { 
+  background: #fff; 
+  border: 1px solid #eee; 
+  border-radius: 12px; 
+  padding: 1.25rem; 
+}
+
+.auth-page {
+  background-image: url("/login-bg.png");
+  background-size: cover;
+  background-position: center;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

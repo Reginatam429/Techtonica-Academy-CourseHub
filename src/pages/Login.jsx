@@ -7,8 +7,8 @@ import AuthLayout from "../components/AuthLayout";
 export default function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [setErr] = useState("");
-    const { login } = useAuth();
+    const [err, setErr] = useState("");
+    const { login, loading } = useAuth();
     const nav = useNavigate();
 
     async function onSubmit(e) {
@@ -24,17 +24,37 @@ export default function Login() {
 
     return (
         <>
-            <NavBar />
-            <AuthLayout
-                title="Login"
-                footer={<p className="muted">New student? <Link to="/register">Register</Link></p>}
-                >
-                <form onSubmit={onSubmit} className="auth-form">
-                    <input type="email" placeholder="email" value={email} onChange={e=>setEmail(e.target.value)} />
-                    <input type="password" placeholder="password" value={password} onChange={e=>setPassword(e.target.value)} />
-                    <button type="submit">Sign in</button>
-                </form>
-            </AuthLayout>
+        <NavBar />
+        <AuthLayout
+            title="Login"
+            className="auth-page"
+            footer={
+            <p className="muted">
+                New student? <Link to="/register">Register</Link>
+            </p>
+            }
+        >
+            {err && <p className="error" style={{ color: "crimson", marginBottom: 8 }}>{err}</p>}
+            <form onSubmit={onSubmit} className="auth-form">
+            <input
+                type="email"
+                placeholder="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+            />
+            <input
+                type="password"
+                placeholder="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+            />
+            <button type="submit" disabled={loading}>
+                {loading ? "Signing in..." : "Sign in"}
+            </button>
+            </form>
+        </AuthLayout>
         </>
     );
 }
