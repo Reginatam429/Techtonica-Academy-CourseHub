@@ -11,6 +11,8 @@
   --orange:#f97316;
   --red:#ef4444;
   --shadow:0 8px 24px rgba(0,0,0,.06);
+  --brand: #0093B5;            /* solid */
+  --brand-soft: #0093B5CC;     /* with alpha */
 }
 
 body{ background:var(--bg); color:var(--text); }
@@ -257,4 +259,32 @@ body{ background:var(--bg); color:var(--text); }
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+/* --- Dashboard --- */
+/* --- welcome ribbon --- */
+.welcome {
+  background: var(--brand-soft);
+  color: #fff;
+  border-radius: 14px;
+  padding: 16px 18px;
+  margin: 18px 0 14px;
+  box-shadow: var(--shadow);
+}
+
+.welcome__title {
+  margin: 0 0 4px 0;
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: .2px;
+}
+
+.welcome__subtitle {
+  margin: 0;
+  color: rgba(255,255,255,.9);
+  font-size: .98rem;
+}
+
+.card.hero {
+  min-height: 140px;
 }

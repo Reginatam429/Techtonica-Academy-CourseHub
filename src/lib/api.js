@@ -1,23 +1,25 @@
-const API_BASE = import.meta.env.VITE_API_URL;
+const RAW_BASE =
+    import.meta.env.DEV ? "/api" : (import.meta.env.VITE_API_URL || "");
+const API_BASE = RAW_BASE.replace(/\/$/, "");
 
-function authHeaders() {
+function makeHeaders(extra = {}) {
     const token = localStorage.getItem("token");
-    return { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
-}
-
-export async function api(path, { method = "GET", body, token } = {}) {
-    const res = await fetch(`${API_BASE}${path}`, {
-        method,
-        headers: {
+    return {
         "Content-Type": "application/json",
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
+        ...extra,
+    };
+}
+
+export async function api(path, { method = "GET", body, headers } = {}) {
+    const res = await fetch(`${API_BASE}${path}`, {
+        method,
+        headers: makeHeaders(headers),
         body: body ? JSON.stringify(body) : undefined,
     });
 
-    // parse JSON
-    let data;
-    try { data = await res.json(); } catch { data = null; }
+    let data = null;
+    try { data = await res.json(); } catch { /* no body */ }
 
     if (!res.ok) {
         const msg = data?.error || data?.message || `Request failed: ${res.status}`;
@@ -26,47 +28,20 @@ export async function api(path, { method = "GET", body, token } = {}) {
     return data;
 }
 
-export async function listCourses(query = "") {
-    const url = new URL(`${API_BASE}/courses`);
-    if (query) url.searchParams.set("query", query);
-    const res = await fetch(url, { headers: authHeaders() });
-    if (!res.ok) throw new Error("Failed to load courses");
-    return res.json();
-}
+// Feature helpers 
+export const listCourses = (query = "") => {
+    const q = query ? `?query=${encodeURIComponent(query)}` : "";
+    return api(`/courses${q}`);
+};
 
-export async function myEnrollments() {
-    const res = await fetch(`${API_BASE}/enrollments/me`, { headers: authHeaders() });
-    if (!res.ok) throw new Error("Failed to load enrollments");
-    return res.json();
-}
+export const myEnrollments = () => api("/enrollments/me");
 
-export async function enrollInCourse(courseId) {
-    const res = await fetch(`${API_BASE}/enrollments`, {
-        method: "POST",
-        headers: authHeaders(),
-        body: JSON.stringify({ courseId }),
-    });
-    if (!res.ok) throw new Error((await res.json()).error || "Enroll failed");
-    return res.json();
-}
+export const enrollInCourse = (courseId) =>
+    api("/enrollments", { method: "POST", body: { courseId } });
 
-export async function unenrollByEnrollmentId(enrollmentId) {
-    const res = await fetch(`${API_BASE}/enrollments/${enrollmentId}`, {
-        method: "DELETE",
-        headers: authHeaders(),
-    });
-    if (!res.ok) throw new Error((await res.json()).error || "Unenroll failed");
-    return true;
-}
+export const unenrollByEnrollmentId = (enrollmentId) =>
+    api(`/enrollments/${enrollmentId}`, { method: "DELETE" }).then(() => true);
 
-export async function myGrades() {
-    const res = await fetch(`${API_BASE}/grades/me`, { headers: authHeaders() });
-    if (!res.ok) throw new Error("Failed to load grades");
-    return res.json();
-}
+export const myGrades = () => api("/grades/me");
 
-export async function myGPA() {
-    const res = await fetch(`${API_BASE}/grades/me/gpa`, { headers: authHeaders() });
-    if (!res.ok) throw new Error("Failed to load GPA");
-    return res.json(); // { gpa: number }
-}
+export const myGPA = () => api("/grades/me/gpa");
