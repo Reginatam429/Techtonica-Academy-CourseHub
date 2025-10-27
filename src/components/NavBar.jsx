@@ -1,6 +1,7 @@
 // src/components/NavBar.jsx
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
+import miniLogo from "/public/mini-logo.png";
 
 export default function NavBar() {
     const { user, logout } = useAuth();
@@ -14,7 +15,9 @@ export default function NavBar() {
     return (
         <header className="navbar">
         <div className="navbar__inner">
-            <Link to="/" className="navbar__brand">Techtonica CourseHub</Link>
+        <Link to="/" className="navbar__brand">
+            <img src={miniLogo} alt="Techtonica CourseHub" className="navbar-logo" />
+        </Link>
 
             <nav className="navbar__nav">
             {user ? (

@@ -154,6 +154,17 @@ body{ background:var(--bg); color:var(--text); }
 }
 
 /* Top Nav */
+.navbar-logo {
+  height: 40px;
+  width: auto;
+  vertical-align: middle;
+}
+
+.navbar__brand {
+  display: flex;
+  align-items: center;
+}
+
 .nav {
   background: #fff;
   border-bottom: 1px solid #f0f2f5;
@@ -207,6 +218,17 @@ body{ background:var(--bg); color:var(--text); }
 .btn--ghost:hover { background: #f6f6f6; }
 
 /* Hero */
+.hero-logo {
+  display: block;
+  margin: 0 auto 1rem;  /* centers the image above the headline */
+  height: 250px;        /* adjust to your liking */
+  width: auto;
+}
+
+.hero-text {
+  text-align: center;
+}
+
 .hero {
   min-height: calc(100vh - 56px);
   background: url('/hero.png') center/cover no-repeat, #0f172a;

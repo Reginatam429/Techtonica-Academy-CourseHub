@@ -1,5 +1,7 @@
 # 🏫 Techtonica Academy — CourseHub
 
+![](public/logo.gif)
+
 An application where **students** browse/enroll in courses and track grades, and **teachers/admins** manage courses, rosters, and grading. Built with **Node/Express + PostgreSQL** (backend) and **React + Vite** (frontend).
 
 **Live app:** https://techtonica-academy-coursehub.netlify.app  
