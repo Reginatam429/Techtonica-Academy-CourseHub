@@ -165,7 +165,7 @@ export default function AdminDashboard() {
             <div className="welcome__text">
                 <h1 className="welcome__title">Welcome back, {firstName} 👋</h1>
                 <p className="welcome__subtitle">
-                Manage users (admins, teachers, students). Search, edit, or delete; create new accounts below.
+                    Manage users (admins, teachers, students). Search, edit, or delete; create new accounts below.
                 </p>
             </div>
             </section>

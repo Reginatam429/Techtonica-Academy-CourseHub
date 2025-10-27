@@ -64,11 +64,15 @@ export default function TeacherDashboard() {
     return (
         <>
         <NavBar />
-        <div className="page p-lg">
-            <header className="mb-md">
-            <h1>Welcome back, {user?.name?.split(" ")[0]} 👋</h1>
-            <p className="muted">Manage your courses, rosters, and grades.</p>
-            </header>
+        <div className="container">
+            <section className="welcome">
+            <div className="welcome__text">
+            <h1 className="welcome__title">Welcome back, {user?.name?.split(" ")[0]} 👋</h1>
+            <p className="welcome__subtitle">
+                Manage your courses, rosters, and grades.
+            </p>
+            </div>
+            </section>
 
             {err && <div className="alert error">{err}</div>}
 
