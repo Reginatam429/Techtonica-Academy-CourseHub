@@ -49,7 +49,6 @@ export default function StudentDashboard() {
         hydrate();
     }, []);
 
-    // Which course IDs am I enrolled in?
     const enrolledCourseIds = useMemo(() => {
         const ids = (enrollments || [])
         .map((e) => e?.course?.id ?? e?.course_id)
@@ -65,17 +64,25 @@ export default function StudentDashboard() {
     }, [courses]);
 
     // ----- Latest grade per course -----
-    const latestGradeByCourseId = useMemo(() => {
-        const m = new Map();
-        (currentGrades || []).forEach((g) => m.set(g.course_id, g));
-        return m;
+    const latestByCourseId = useMemo(() => {
+    const m = new Map(); // course_id -> latest grade record
+    for (const g of currentGrades || []) {
+        const prev = m.get(g.course_id);
+        const curT  = g?.assigned_at ? new Date(g.assigned_at).getTime() : -Infinity;
+        const prevT = prev?.assigned_at ? new Date(prev.assigned_at).getTime() : -Infinity;
+        if (!prev || curT >= prevT) m.set(g.course_id, g);
+    }
+    return m;
     }, [currentGrades]);
 
-    // Array for GradesPanel so it shows one (latest) per course
-    // const latestGradesArray = useMemo(
-    //     () => Array.from(latestGradeByCourseId.values()),
-    //     [latestGradeByCourseId]
-    // );
+    // Array form for GradesPanel so it lists each course once, newest first
+    const latestGradesArray = useMemo(() => {
+    return Array.from(latestByCourseId.values()).sort((a, b) => {
+        const at = a?.assigned_at ? new Date(a.assigned_at).getTime() : 0;
+        const bt = b?.assigned_at ? new Date(b.assigned_at).getTime() : 0;
+        return bt - at;
+    });
+    }, [latestByCourseId]);
 
     async function handleEnroll(courseId) {
         try {
@@ -114,20 +121,16 @@ export default function StudentDashboard() {
         
                 {/* Row 1: My Grades */}
                 <div className="grid two">
-                {/* Pass only “current” grades */}
-                <GradesPanel gpa={gpa} grades={currentGrades} />
-                <div className="card hero">
-                    <div className="card-title">Quick tip</div>
-                    <p className="muted">Use the search to quickly find courses below.</p>
+                <GradesPanel gpa={gpa} grades={latestGradesArray} />
+                <div className="card hero"> … </div>
                 </div>
-                </div>
-        
+
                 {/* Row 2: My Courses */}
                 <div className="section">
                 <div className="section-head">
                     <h2>My Courses</h2>
                 </div>
-        
+
                 {enrollments.length === 0 ? (
                     <div className="muted">You do not have any courses yet. Enroll below!</div>
                 ) : (
@@ -135,27 +138,17 @@ export default function StudentDashboard() {
                     {enrollments.map((enr) => {
                         const course =
                         courseById.get(enr.course_id ?? enr?.course?.id) ||
-                        enr.course || {
-                            id: enr.course_id,
-                            code: "(code)",
-                            name: "(name)",
-                            credits: 0,
-                            available_seats: 0,
-                        };
-        
-                        const latest = latestGradeByCourseId.get(course.id);
-                        const gradeValue = latest?.grade ?? null; // string like "A" / "B_PLUS"
-        
+                        enr.course || { id: enr.course_id, code: "(code)", name: "(name)", credits: 0 };
+
+                        const latest = latestByCourseId.get(course.id);
+                        const gradeValue = latest?.grade ?? null; // "A", "B_PLUS", etc.
+
                         return (
                         <CourseCard
                             key={enr.id}
                             course={course}
-                            grade={gradeValue} // only shows if truthy
-                            footer={
-                            <button className="btn danger" onClick={() => handleUnenroll(enr.id)}>
-                                Unenroll
-                            </button>
-                            }
+                            grade={gradeValue}        // only shows if truthy
+                            footer={<button className="btn danger" onClick={() => handleUnenroll(enr.id)}>Unenroll</button>}
                         />
                         );
                     })}
