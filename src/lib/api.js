@@ -16,6 +16,7 @@ export async function api(path, { method = "GET", body, headers } = {}) {
         method,
         headers: makeHeaders(headers),
         body: body ? JSON.stringify(body) : undefined,
+        cache: "no-store",
     });
 
     let data = null;
@@ -31,7 +32,8 @@ export async function api(path, { method = "GET", body, headers } = {}) {
 // Feature helpers 
 export const listCourses = (query = "") => {
     const q = query ? `?query=${encodeURIComponent(query)}` : "";
-    return api(`/courses${q}`);
+    const suffix = q ? "&" : "?";
+    return api(`/courses${q}${suffix}t=${Date.now()}`);
 };
 
 export const myEnrollments = () => api("/enrollments/me");

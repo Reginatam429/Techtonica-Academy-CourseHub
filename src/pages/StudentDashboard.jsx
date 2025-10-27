@@ -56,6 +56,25 @@ export default function StudentDashboard() {
         return new Set(ids);
     }, [enrollments]);
 
+    const courseById = useMemo(() => {
+        const m = new Map();
+        (courses || []).forEach(c => m.set(c.id, c));
+        return m;
+    }, [courses]);
+
+    const latestGradeByCourseId = useMemo(() => {
+        const byCourse = new Map();
+        (grades || []).forEach(g => {
+            const key = g.course_id;
+            const prev = byCourse.get(key);
+            const prevTime = prev?.assigned_at ? new Date(prev.assigned_at).getTime() : -Infinity;
+            const curTime  = g.assigned_at   ? new Date(g.assigned_at).getTime()   : -Infinity;
+
+            if (!prev || curTime >= prevTime) byCourse.set(key, g);
+        });
+        return byCourse;
+    }, [grades]);
+
     async function handleEnroll(courseId) {
         try {
         await enrollInCourse(courseId);
@@ -80,7 +99,7 @@ export default function StudentDashboard() {
             <NavBar />
             <div className="container">
 
-            {/* Welcome ribbon (full width) */}
+            {/* Welcome ribbon */}
             <section className="welcome">
                 <div className="welcome__text">
                 <h1 className="welcome__title">Welcome back, {firstName} 👋</h1>
@@ -92,7 +111,7 @@ export default function StudentDashboard() {
 
             {err && <div className="error">{err}</div>}
 
-            {/* Row 1: My Grades (kept compact) */}
+            {/* Row 1: My Grades */}
             <div className="grid two">
                 <GradesPanel gpa={gpa} grades={grades} />
                 <div className="card hero">
@@ -111,17 +130,23 @@ export default function StudentDashboard() {
                 ) : (
                 <div className="grid three">
                     {enrollments.map((enr) => {
-                    const course = enr.course ?? {
+                    const course =
+                    courseById.get(enr.course_id ?? enr?.course?.id) ||
+                    enr.course || {
                         id: enr.course_id,
-                        code: enr.course_code || "(code)",
-                        name: enr.course_name || "(name)",
-                        credits: enr.credits ?? 0,
-                        available_seats: enr.available_seats ?? 0,
+                        code: "(code)",
+                        name: "(name)",
+                        credits: 0,
+                        available_seats: 0,
                     };
+                    const latest = latestGradeByCourseId.get(course.id);
+                    const gradeValue = latest?.value ?? null;
+
                     return (
                         <CourseCard
                         key={enr.id}
                         course={course}
+                        grade={gradeValue}
                         footer={
                             <button
                             className="btn danger"

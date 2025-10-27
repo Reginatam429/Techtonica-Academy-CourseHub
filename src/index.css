@@ -288,3 +288,21 @@ body{ background:var(--bg); color:var(--text); }
 .card.hero {
   min-height: 140px;
 }
+
+/* --- gradecard ---*/
+.grade-chip {
+  display: inline-block;
+  min-width: 2.2rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  line-height: 1.2;
+  text-align: center;
+  background: #eef3ff;
+  color: #1f3a8a;
+}
+.grade-chip.muted {
+  background: #f3f4f6;
+  color: #6b7280;
+}
