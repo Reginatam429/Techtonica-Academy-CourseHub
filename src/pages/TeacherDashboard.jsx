@@ -14,6 +14,28 @@ import NavBar from "../components/NavBar";
 
 const LETTERS = ["A+","A","A-","B+","B","B-","C+","C","C-","D+","D","D-","F"];
 
+// helpers
+function toEnumGrade(s) {
+    if (!s) return null;
+    s = String(s).trim().replace("−", "-").toUpperCase();
+
+    if (/^[ABCDF](?:_PLUS|_MINUS)?$/.test(s)) return s;
+    // map "A+" / "A-" etc -> enum
+    if (/[ABCDF][+-]?/.test(s)) {
+    return s
+        .replace("+", "_PLUS")
+        .replace("-", "_MINUS");
+    }
+    return null;
+}
+
+function fromEnumGrade(s) {
+    if (!s) return "—";
+    return s
+        .replace("_PLUS", "+")
+        .replace("_MINUS", "−");  
+}
+
 export default function TeacherDashboard() {
     const { user } = useAuth();
     const [allCourses, setAllCourses] = useState([]);
@@ -186,15 +208,28 @@ function RosterDialog({ course, onClose }) {
                     <td>{s.name}</td>
                     <td>{s.email}</td>
                     <td>{s.student_code || s.student_id}</td>
-                    <td>{s.latest_grade ?? "—"}</td>
+                    <td>{fromEnumGrade(s.latest_grade)}</td>
                     <td>
                         <select
                         disabled={savingId === s.student_id}
-                        defaultValue={s.latest_grade || ""}
-                        onChange={e => e.target.value && handleGrade(s.student_id, e.target.value)}
+                        defaultValue={fromEnumGrade(s.latest_grade) || ""}
+                        onChange={e => {
+                            const valueEnum = toEnumGrade(e.target.value);
+                            if (valueEnum) handleGrade(s.student_id, valueEnum);
+                        }}
                         >
-                        <option value="" disabled>Grade…</option>
-                        {LETTERS.map(l => <option key={l} value={l}>{l}</option>)}
+                            <option value="">Grade…</option>
+                            <option value="A_PLUS">A+</option>
+                            <option value="A">A</option>
+                            <option value="A_MINUS">A−</option>
+                            <option value="B_PLUS">B+</option>
+                            <option value="B">B</option>
+                            <option value="B_MINUS">B−</option>
+                            <option value="C_PLUS">C+</option>
+                            <option value="C">C</option>
+                            <option value="C_MINUS">C−</option>
+                            <option value="D">D</option>
+                            <option value="F">F</option>
                         </select>
                     </td>
                     </tr>
@@ -450,7 +485,7 @@ function StudentBulkEnrollPanel({ courses, onEnrolled }) {
                         <td>{s.name}</td>
                         <td>{s.email}</td>
                         <td>{s.student_code || s.student_id}</td>
-                        <td>{s.latest_grade ?? "—"}</td>
+                        <td>{fromEnumGrade(s.latest_grade)}</td>
                     </tr>
                     ))}
                     {enrolled.length === 0 && (
