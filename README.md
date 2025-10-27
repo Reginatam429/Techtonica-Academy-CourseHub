@@ -7,10 +7,6 @@ An application where **students** browse/enroll in courses and track grades, and
 **Live app:** https://techtonica-academy-coursehub.netlify.app  
 **Live API (Heroku):** https://techtonica-coursehub-api-1dcb105ae03b.herokuapp.com
 
-> 🎞️ **Demo GIF:** will be adding `/docs/demo.gif` to this repo and reference it here:
->
-> `![CourseHub demo](docs/demo.gif)`
-
 ---
 
 ## ✨ Features (MVP)
