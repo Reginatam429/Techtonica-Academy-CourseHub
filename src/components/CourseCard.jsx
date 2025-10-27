@@ -1,28 +1,23 @@
-export default function CourseCard({ course, footer, grade }) {
+export default function CourseCard({ course, grade, footer }) {
+    const { code, name, credits, available_seats } = course;
+
     return (
-        <div className="card course-card">
-            <div className="course-head">
-            <div>
-                <div className="code">{course.code}</div>
-                <div className="name">{course.name}</div>
-            </div>
+        <div className="card">
+            <div className="card-title">{code || "(code)"}</div>
+            <div className="muted">{name || "(name)"}</div>
     
+            {/* grade chip – only when a grade value exists */}
             {grade ? (
-                <span className={`grade-chip`} title="Latest grade">
-                {grade}
-                </span>
-            ) : (
-                <span className="grade-chip muted" title="No grade yet">Not yet graded</span>
-            )}
+            <div className="chip grade" title="Latest grade">
+                {grade.replace("_PLUS", "+").replace("_MINUS", "−")}
+            </div>
+            ) : null}
+    
+            <div className="muted" style={{ marginTop: 8 }}>
+            {credits ?? 0} credits · {(available_seats ?? 0)} seats left
             </div>
     
-            <div className="meta">
-            <span>{course.credits} credits</span>
-            {" · "}
-            <span>{Math.max(course.available_seats ?? 0, 0)} seats left</span>
-            </div>
-    
-            {footer ? <div className="card-footer">{footer}</div> : null}
+            <div style={{ marginTop: 12 }}>{footer}</div>
         </div>
     );
 }
