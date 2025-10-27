@@ -4,8 +4,14 @@
 
 An application where **students** browse/enroll in courses and track grades, and **teachers/admins** manage courses, rosters, and grading. Built with **Node/Express + PostgreSQL** (backend) and **React + Vite** (frontend).
 
-**Live app:** https://techtonica-academy-coursehub.netlify.app  
+**Live app:** https://techtonica-academy-coursehub.netlify.app (For Live Demo, try login with:
+- Admin: `admin@coursehub.io` / `adminpass`
+- Teacher: `daaimah@coursehub.io` / `adminpass`
+- Student: `regina@coursehub.io` /  `adminpass` )
+
 **Live API (Heroku):** https://techtonica-coursehub-api-1dcb105ae03b.herokuapp.com
+**Backend Repo:** https://github.com/Reginatam429/Techtonica-Academy-CourseHub-Server
+
 
 ---
 
