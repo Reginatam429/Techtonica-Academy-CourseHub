@@ -116,3 +116,56 @@ export async function bulkEnroll(courseId, studentIds = []) {
     }
     return data; // { results: [{studentId, ok, reason?}, ...], seatsLeft }
 }
+
+// --- Admin: Users CRUD ---
+export async function adminListUsers(query = "") {
+    const url = new URL(`${API_BASE}/users`, window.location.origin);
+    if (query) url.searchParams.set("query", query);
+    const res = await fetch(url.toString().replace(window.location.origin, ""), {
+        headers: authHeaders(),
+    });
+    if (!res.ok) throw new Error("Failed to load users");
+    return res.json();
+}
+
+export async function adminReadUser(id) {
+    const res = await fetch(`${API_BASE}/users/${id}`, {
+        headers: authHeaders(),
+    });
+    if (!res.ok) throw new Error("Failed to load user");
+    return res.json();
+}
+
+export async function adminCreateUser(payload) {
+    const res = await fetch(`${API_BASE}/users`, {
+        method: "POST",
+        headers: authHeaders(),
+        body: JSON.stringify(payload),
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok) throw new Error(data?.errors?.[0] || data?.error || "Create failed");
+    return data;
+}
+
+export async function adminUpdateUser(id, payload) {
+    const res = await fetch(`${API_BASE}/users/${id}`, {
+        method: "PUT",
+        headers: authHeaders(),
+        body: JSON.stringify(payload),
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok) throw new Error(data?.errors?.[0] || data?.error || "Update failed");
+    return data;
+}
+
+export async function adminDeleteUser(id) {
+    const res = await fetch(`${API_BASE}/users/${id}`, {
+        method: "DELETE",
+        headers: authHeaders(),
+    });
+    if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || "Delete failed");
+    }
+    return true;
+}

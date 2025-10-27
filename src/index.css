@@ -307,16 +307,21 @@ body{ background:var(--bg); color:var(--text); }
   color: #6b7280;
 }
 
-/* --- Teacher Dashboard ---*/
+/* --- Teacher/Admin Dashboard ---*/
 .table { width: 100%; border-collapse: collapse; }
 .table th, .table td { padding: .75rem 1rem; border-top: 1px solid #eee; text-align: left; }
 .table thead th { border-top: none; font-weight: 700; }
 
 .modal-backdrop {
-  position: fixed; inset: 0; background: rgba(0,0,0,.25);
-  display: grid; place-items: center; z-index: 50;
+  position: fixed; inset: 0; background: rgba(0,0,0,.35);
+  display:flex; align-items:center; justify-content:center; z-index: 1000;
 }
-.modal { width: min(920px, 92vw); max-height: 85vh; overflow: auto; }
+.modal { 
+  width: min(920px, 92vw); max-height: 85vh; overflow: auto; 
+  background: #fff; border-radius: 12px; max-width: 720px; width: 100%;
+  box-shadow: 0 10px 30px rgba(0,0,0,.15); padding: 16px;
+}
 .modal-header { display:flex; justify-content:space-between; align-items:center; padding-bottom:.5rem; border-bottom:1px solid #eee; }
 .table.compact td, .table.compact th { padding: .5rem .75rem; }
-.scroll-panel { max-height: 340px; overflow: auto; padding-right: 4px; }
+.modal-head { display:flex; align-items:center; justify-content:space-between; margin-bottom: 12px; }
+.table-wrap { width:100%; overflow:auto; }
