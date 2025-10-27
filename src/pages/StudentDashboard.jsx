@@ -23,6 +23,18 @@ export default function StudentDashboard() {
     const [currentGrades, setCurrentGrades] = useState([]);
     const [gpa, setGPA] = useState(null);
     const [err, setErr] = useState("");
+    const tips = [
+        "Use the search to quickly find courses.",
+        "Unenroll to free a seat if you change your mind.",
+        "Seats update immediately after you enroll/unenroll.",
+        "GPA recalculates as new grades are posted.",
+        "See your latest grade per course in “My Courses”.",
+    ];
+    const [tipIdx, setTipIdx] = useState(0);
+    useEffect(() => {
+        const id = setInterval(() => setTipIdx(i => (i + 1) % tips.length), 10000);
+        return () => clearInterval(id);
+    }, []);
 
     async function hydrate(query = "") {
         setLoading(true);
@@ -122,7 +134,13 @@ export default function StudentDashboard() {
                 {/* Row 1: My Grades */}
                 <div className="grid two">
                 <GradesPanel gpa={gpa} grades={latestGradesArray} />
-                <div className="card hero"> … </div>
+                <div className="card hero tip-card">
+                    <img src="/lightbulb.png" alt="" className="bulb-img" />
+                    <div className="tip-header">
+                    <span>Quick tip</span>
+                    </div>
+                    <p className="tip-text">{tips[tipIdx]}</p>
+                    </div>
                 </div>
 
                 {/* Row 2: My Courses */}
@@ -173,7 +191,6 @@ export default function StudentDashboard() {
                         <CourseCard
                             key={c.id}
                             course={c}
-                            // NOTE: we do NOT pass a grade for catalog cards (prevents “not yet graded” showing)
                             footer={
                             <button
                                 className="btn"
