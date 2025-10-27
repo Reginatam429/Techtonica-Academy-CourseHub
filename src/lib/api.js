@@ -65,13 +65,18 @@ export async function assignGrade({ studentId, courseId, value }) {
 
 // teacher/admin: search students (role-aware by backend)
 export async function searchStudents(query = "") {
-    const url = new URL(`${API_BASE}/users`);
-    if (query) url.searchParams.set("query", query);
-    const res = await fetch(url, {
-        headers: authHeaders(),
-    });
+    const params = new URLSearchParams();
+    if (query) params.set("query", query);
+    params.set("role", "STUDENT");
+
+    const qs = params.toString();
+    const url = `${API_BASE}/users${qs ? `?${qs}` : ""}`;
+
+    const res = await fetch(url, { headers: authHeaders() });
     if (!res.ok) throw new Error("Failed to search users");
-    return res.json(); // TEACHER: returns only STUDENT users
+    const rows = await res.json();
+
+    return Array.isArray(rows) ? rows.filter(r => (r.role || "STUDENT") === "STUDENT") : [];
 }
 
 // teacher/admin: create & delete courses

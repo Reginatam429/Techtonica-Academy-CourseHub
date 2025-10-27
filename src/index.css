@@ -319,3 +319,4 @@ body{ background:var(--bg); color:var(--text); }
 .modal { width: min(920px, 92vw); max-height: 85vh; overflow: auto; }
 .modal-header { display:flex; justify-content:space-between; align-items:center; padding-bottom:.5rem; border-bottom:1px solid #eee; }
 .table.compact td, .table.compact th { padding: .5rem .75rem; }
+.scroll-panel { max-height: 340px; overflow: auto; padding-right: 4px; }

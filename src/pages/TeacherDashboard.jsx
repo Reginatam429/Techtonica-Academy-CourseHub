@@ -361,42 +361,47 @@ function AddCourseForm({ onCreated }) {
 
 /* ---------- Student lists & Bulk Enroll ---------- */
 function StudentBulkEnrollPanel({ courses, onEnrolled }) {
-    const [selectedCourseId, setSelectedCourseId] = useState(courses[0]?.id || null);
+    const [selectedCourseId, setSelectedCourseId] = useState(null);
     const [query, setQuery] = useState("");
     const [allStudents, setAllStudents] = useState([]);
     const [enrolled, setEnrolled] = useState([]);
     const [loading, setLoading] = useState(false);
     const [checked, setChecked] = useState(new Set());
 
-    // Refresh enrolled list for the selected course
+    // Load roster when a course is selected
     useEffect(() => {
         let on = true;
         (async () => {
-        if (!selectedCourseId) return;
+        if (!selectedCourseId) { setEnrolled([]); return; }
         try {
             const roster = await rosterForCourse(selectedCourseId);
             if (on) setEnrolled(roster);
-        } catch {
-            if (on) setEnrolled([]);
-        }
+        } catch { if (on) setEnrolled([]); }
         })();
         return () => { on = false; };
     }, [selectedCourseId]);
 
-    // Search students
+    // Preload all students once (blank search)
+    useEffect(() => {
+        (async () => {
+        try {
+            setLoading(true);
+            const rows = await searchStudents(""); // all visible to this user
+            setAllStudents(rows);
+            setChecked(new Set());
+        } finally { setLoading(false); }
+        })();
+    }, []);
+
+    // Free-text search over students
     async function doSearch(e) {
         e?.preventDefault?.();
         try {
         setLoading(true);
         const rows = await searchStudents(query.trim());
         setAllStudents(rows);
-        // reset checks
         setChecked(new Set());
-        } catch (e) {
-        alert(e.message || "Search failed");
-        } finally {
-        setLoading(false);
-        }
+        } finally { setLoading(false); }
     }
 
     function toggleCheck(id) {
@@ -409,7 +414,6 @@ function StudentBulkEnrollPanel({ courses, onEnrolled }) {
 
     async function doBulkEnroll() {
         if (!selectedCourseId || checked.size === 0) return;
-        try {
         const studentIds = Array.from(checked);
         const { added, skipped } = await bulkEnroll(selectedCourseId, studentIds);
         // refresh roster + notify parent
@@ -418,93 +422,103 @@ function StudentBulkEnrollPanel({ courses, onEnrolled }) {
         setChecked(new Set());
         await onEnrolled?.();
         alert(`Bulk enroll complete: added ${added}, skipped ${skipped}.`);
-        } catch (e) {
-        alert(e.message || "Bulk enroll failed");
-        }
     }
 
-    // For quick filtering: students not already enrolled in selected course
+    // Build available list: when a course is chosen, hide already-enrolled students
     const enrolledSet = useMemo(() => new Set(enrolled.map(r => r.student_id)), [enrolled]);
-    const available = useMemo(
-        () => allStudents.filter(s => !enrolledSet.has(s.id)),
-        [allStudents, enrolledSet]
-    );
+    const available = useMemo(() => {
+        const base = allStudents;
+        return selectedCourseId
+        ? base.filter(s => !enrolledSet.has(s.id))
+        : base;
+    }, [allStudents, enrolledSet, selectedCourseId]);
 
     return (
         <div className="card">
-        <div className="card-title">Student Lists & Bulk Enroll</div>
-
-        <div className="row gap-sm wrap mb-sm">
-            <select value={selectedCourseId || ""} onChange={e=>setSelectedCourseId(Number(e.target.value) || null)}>
-            {courses.map(c => <option key={c.id} value={c.id}>{c.code} • {c.name}</option>)}
-            </select>
-
-            <form className="row gap-sm" onSubmit={doSearch}>
-            <input
-                placeholder="Search students (name, email, ID, major)"
-                value={query}
-                onChange={e=>setQuery(e.target.value)}
-            />
-            <button className="btn" type="submit" disabled={loading}>Search</button>
-            </form>
-
-            <button className="btn" disabled={!selectedCourseId || checked.size === 0} onClick={doBulkEnroll}>
-            Bulk Enroll {checked.size ? `(${checked.size})` : ""}
-            </button>
-        </div>
-
-        <div className="grid two">
-            <div>
-            <h3 className="mb-xs">Available students</h3>
-            <table className="table compact">
+            <div className="card-title">Student Lists &amp; Bulk Enroll</div>
+        
+            {/* Row A: CURRENTLY ENROLLED (full width, scroll) */}
+            <div className="scroll-panel mb-sm">
+                <h3 className="mb-xs">Currently enrolled</h3>
+                <table className="table compact">
                 <thead>
-                <tr><th></th><th>Name</th><th>Email</th><th>ID</th><th>Major</th></tr>
+                    <tr><th>Name</th><th>Email</th><th>ID</th><th>Latest grade</th></tr>
                 </thead>
                 <tbody>
-                {available.map(s => (
+                    {enrolled.map(s => (
                     <tr key={s.id}>
-                    <td>
-                        <input
-                        type="checkbox"
-                        checked={checked.has(s.id)}
-                        onChange={() => toggleCheck(s.id)}
-                        />
-                    </td>
-                    <td>{s.name}</td>
-                    <td>{s.email}</td>
-                    <td>{s.studentId || s.student_id || "—"}</td>
-                    <td>{s.major || "—"}</td>
+                        <td>{s.name}</td>
+                        <td>{s.email}</td>
+                        <td>{s.student_code || s.student_id}</td>
+                        <td>{s.latest_grade ?? "—"}</td>
                     </tr>
-                ))}
-                {available.length === 0 && (
-                    <tr><td colSpan={5} className="muted">No results (or all already enrolled).</td></tr>
-                )}
-                </tbody>
-            </table>
-            </div>
-
-            <div>
-            <h3 className="mb-xs">Currently enrolled</h3>
-            <table className="table compact">
-                <thead>
-                <tr><th>Name</th><th>Email</th><th>ID</th><th>Latest grade</th></tr>
-                </thead>
-                <tbody>
-                {enrolled.map(s => (
-                    <tr key={s.id}>
-                    <td>{s.name}</td>
-                    <td>{s.email}</td>
-                    <td>{s.student_code || s.student_id}</td>
-                    <td>{s.latest_grade ?? "—"}</td>
-                    </tr>
-                ))}
-                {enrolled.length === 0 && (
+                    ))}
+                    {enrolled.length === 0 && (
                     <tr><td colSpan={4} className="muted">No students enrolled yet.</td></tr>
-                )}
+                    )}
                 </tbody>
-            </table>
+                </table>
             </div>
-        </div>
+        
+            {/* Row B: Controls */}
+            <div className="row gap-sm wrap mb-sm">
+                <select
+                value={selectedCourseId ?? ""}
+                onChange={e => setSelectedCourseId(e.target.value ? Number(e.target.value) : null)}
+                >
+                <option value="">— None (show all students) —</option>
+                {courses.map(c => (
+                    <option key={c.id} value={c.id}>{c.code} • {c.name}</option>
+                ))}
+                </select>
+        
+                <form className="row gap-sm" onSubmit={doSearch}>
+                <input
+                    placeholder="Search students (name, email, ID, major)"
+                    value={query}
+                    onChange={e=>setQuery(e.target.value)}
+                />
+                <button className="btn" type="submit" disabled={loading}>Search</button>
+                </form>
+        
+                <button
+                className="btn"
+                disabled={!selectedCourseId || checked.size === 0}
+                onClick={doBulkEnroll}
+                >
+                Enroll {checked.size ? `(${checked.size})` : ""}
+                </button>
+            </div>
+        
+            {/* Row C: AVAILABLE STUDENTS (full width, scroll) */}
+            <div className="scroll-panel">
+                <h3 className="mb-xs">Available students</h3>
+                <table className="table compact">
+                <thead>
+                    <tr><th></th><th>Name</th><th>Email</th><th>ID</th><th>Major</th></tr>
+                </thead>
+                <tbody>
+                    {available.map(s => (
+                    <tr key={s.id}>
+                        <td>
+                        <input
+                            type="checkbox"
+                            checked={checked.has(s.id)}
+                            onChange={() => toggleCheck(s.id)}
+                        />
+                        </td>
+                        <td>{s.name}</td>
+                        <td>{s.email}</td>
+                        <td>{s.studentId || s.student_id || "—"}</td>
+                        <td>{s.major || "—"}</td>
+                    </tr>
+                    ))}
+                    {available.length === 0 && (
+                    <tr><td colSpan={5} className="muted">No results (or all already enrolled).</td></tr>
+                    )}
+                </tbody>
+                </table>
+            </div>
         </div>
     );
 }
